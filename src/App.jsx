@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 function App() {
   const [page, setPage] = useState("home");
   const [backendMessage, setBackendMessage] = useState("");
+  const [signupData, setSignupData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
 
   const videos = [
     { title: "Morning vlog", creator: "@manya", src: "/videos/sample1.mp4" },
@@ -17,6 +22,27 @@ function App() {
       .then((data) => setBackendMessage(data))
       .catch((err) => console.log(err));
   }, []);
+
+  const handleSignup = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/auth/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(signupData),
+        }
+      );
+
+      const data = await response.json();
+
+      alert(data.message);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="app">
@@ -76,10 +102,43 @@ function App() {
         <div className="auth-container">
           <div className="auth-box">
             <h2>Create Account</h2>
-            <input type="text" placeholder="Username" />
-            <input type="email" placeholder="Email" />
-            <input type="password" placeholder="Password" />
-            <button className="auth-btn">Signup</button>
+            <input
+              type="text"
+              placeholder="Username"
+              value={signupData.username}
+              onChange={(e) =>
+                setSignupData({
+                  ...signupData,
+                  username: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={signupData.email}
+              onChange={(e) =>
+                setSignupData({
+                  ...signupData,
+                  email: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={signupData.password}
+              onChange={(e) =>
+                setSignupData({
+                  ...signupData,
+                password: e.target.value,
+              })
+            }
+          />
+
+            <button className="auth-btn" onClick={handleSignup}>Signup</button>
           </div>
         </div>
       )}
