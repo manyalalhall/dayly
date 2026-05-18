@@ -4,11 +4,19 @@ import { useEffect, useState } from "react";
 function App() {
   const [page, setPage] = useState("home");
   const [backendMessage, setBackendMessage] = useState("");
+
   const [signupData, setSignupData] = useState({
     username: "",
     email: "",
     password: "",
   });
+
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [user, setUser] = useState(null);
 
   const videos = [
     { title: "Morning vlog", creator: "@manya", src: "/videos/sample1.mp4" },
@@ -25,23 +33,56 @@ function App() {
 
   const handleSignup = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(signupData),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(signupData),
+      });
 
       const data = await response.json();
-
       alert(data.message);
+
+      if (response.ok) {
+        setPage("login");
+      }
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser({
+          username: data.username,
+          email: loginData.email,
+        });
+
+        alert("Login successful");
+        setPage("home");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setPage("home");
   };
 
   return (
@@ -56,13 +97,25 @@ function App() {
         />
 
         <div className="nav-buttons">
-          <button onClick={() => setPage("login")} className="nav-btn">
-            Login
-          </button>
+          {user ? (
+            <>
+              <p style={{ fontWeight: "bold" }}>@{user.username}</p>
 
-          <button onClick={() => setPage("signup")} className="upload-btn">
-            Signup
-          </button>
+              <button className="nav-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setPage("login")} className="nav-btn">
+                Login
+              </button>
+
+              <button onClick={() => setPage("signup")} className="upload-btn">
+                Signup
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -91,9 +144,34 @@ function App() {
         <div className="auth-container">
           <div className="auth-box">
             <h2>Login to Day.ly</h2>
-            <input type="email" placeholder="Email" />
-            <input type="password" placeholder="Password" />
-            <button className="auth-btn">Login</button>
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={loginData.email}
+              onChange={(e) =>
+                setLoginData({
+                  ...loginData,
+                  email: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={loginData.password}
+              onChange={(e) =>
+                setLoginData({
+                  ...loginData,
+                  password: e.target.value,
+                })
+              }
+            />
+
+            <button className="auth-btn" onClick={handleLogin}>
+              Login
+            </button>
           </div>
         </div>
       )}
@@ -102,6 +180,7 @@ function App() {
         <div className="auth-container">
           <div className="auth-box">
             <h2>Create Account</h2>
+
             <input
               type="text"
               placeholder="Username"
@@ -133,12 +212,14 @@ function App() {
               onChange={(e) =>
                 setSignupData({
                   ...signupData,
-                password: e.target.value,
-              })
-            }
-          />
+                  password: e.target.value,
+                })
+              }
+            />
 
-            <button className="auth-btn" onClick={handleSignup}>Signup</button>
+            <button className="auth-btn" onClick={handleSignup}>
+              Signup
+            </button>
           </div>
         </div>
       )}
