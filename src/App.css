@@ -62,6 +62,10 @@ input { font-family: var(--font-body); }
   cursor: pointer; flex-shrink: 0;
   text-decoration: none;
 }
+.navbar-logo-img {
+  height: 36px; width: auto;
+  display: block; object-fit: contain;
+}
 .logo-text {
   font-family: var(--font-display);
   font-size: 22px; font-weight: 500;
@@ -144,25 +148,6 @@ input { font-family: var(--font-body); }
 /* ── Explore ─────────────────────────────────────────────── */
 .explore-page { padding-top: 0; }
 
-.category-bar {
-  display: flex; gap: 8px; overflow-x: auto; padding: 16px 28px;
-  border-bottom: 1px solid var(--border);
-  scrollbar-width: none;
-}
-.category-bar::-webkit-scrollbar { display: none; }
-
-.cat-btn {
-  white-space: nowrap; padding: 7px 16px;
-  border-radius: var(--radius-pill);
-  background: var(--white); border: 1.5px solid var(--border);
-  font-size: 13px; font-weight: 500; color: var(--mid);
-  transition: all var(--transition);
-  flex-shrink: 0;
-}
-.cat-btn:hover, .cat-btn.active {
-  background: var(--black); color: var(--white); border-color: var(--black);
-}
-
 .search-header { padding: 20px 28px 0; }
 .search-results-label { font-size: 15px; color: var(--muted); }
 .search-results-label strong { color: var(--dark); }
@@ -216,14 +201,6 @@ input { font-family: var(--font-body); }
 .video-card:hover .video-overlay { opacity: 1; }
 .play-icon { drop-shadow: 0 2px 8px rgba(0,0,0,0.5); }
 
-.video-tag {
-  position: absolute; top: 10px; left: 10px;
-  background: rgba(0,0,0,0.55); color: white;
-  font-size: 11px; font-weight: 600;
-  padding: 3px 9px; border-radius: var(--radius-pill);
-  letter-spacing: 0.3px; backdrop-filter: blur(4px);
-}
-
 .video-info {
   padding: 10px 12px 11px;
 }
@@ -250,8 +227,7 @@ input { font-family: var(--font-body); }
 .action-btn:hover { background: var(--surface); color: var(--dark); }
 .action-btn.liked { color: var(--red); }
 .action-btn.liked svg { fill: var(--red); }
-.action-btn.saved { color: #2563eb; }
-.action-btn.saved svg { fill: #2563eb; }
+
 
 /* ── Empty State ─────────────────────────────────────────── */
 .empty-state {
@@ -323,7 +299,6 @@ input { font-family: var(--font-body); }
 }
 .modal-title { font-size: 17px; font-weight: 700; color: var(--dark); line-height: 1.3; }
 .modal-creator { font-size: 13px; color: var(--muted); margin-top: 3px; }
-.modal-stat-row { display: flex; gap: 12px; }
 .modal-stat {
   display: flex; align-items: center; gap: 5px;
   font-size: 13px; color: var(--muted); white-space: nowrap;
@@ -346,7 +321,7 @@ input { font-family: var(--font-body); }
 }
 .modal-action-btn:hover { border-color: var(--dark); background: var(--surface); }
 .modal-action-btn.active-like { color: var(--red); border-color: var(--red); background: var(--red-light); }
-.modal-action-btn.active-save { color: #2563eb; border-color: #2563eb; background: #eff6ff; }
+
 
 /* ── Upload Modal ────────────────────────────────────────── */
 .upload-box {
@@ -421,9 +396,8 @@ input { font-family: var(--font-body); }
   display: flex; flex-direction: column; gap: 20px;
 }
 .auth-logo {
-  display: flex; align-items: center; gap: 10px; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
-.auth-logo .logo-text { font-size: 26px; }
 
 .auth-tabs {
   display: flex; background: var(--surface);
@@ -504,20 +478,6 @@ input { font-family: var(--font-body); }
 
 .profile-upload-btn { margin-top: 4px; width: fit-content; }
 
-.profile-tabs {
-  display: flex; gap: 0; padding: 0 40px;
-  border-bottom: 1px solid var(--border); background: var(--white);
-}
-.tab-btn {
-  display: flex; align-items: center; gap: 7px;
-  padding: 14px 18px; font-size: 14px; font-weight: 600;
-  color: var(--muted); border-bottom: 2px solid transparent;
-  transition: all var(--transition);
-}
-.tab-btn:hover { color: var(--dark); }
-.tab-btn.active { color: var(--dark); border-bottom-color: var(--red); }
-
-.profile-empty { padding: 80px 20px; }
 
 /* ── Toast ───────────────────────────────────────────────── */
 .toast {
@@ -549,6 +509,4 @@ input { font-family: var(--font-body); }
   .modal-box { flex-direction: column; max-height: 92vh; }
   .modal-video-wrap { flex: 0 0 auto; max-height: 50vh; }
   .modal-info { padding: 18px; }
-
-  .category-bar { padding: 12px 14px; }
 }

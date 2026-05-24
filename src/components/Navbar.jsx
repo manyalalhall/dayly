@@ -11,10 +11,7 @@ export default function Navbar({ user, searchQuery, onSearch, onLogoClick, onPro
   return (
     <header className="navbar">
       <div className="navbar-logo" onClick={onLogoClick}>
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <circle cx="14" cy="14" r="13" fill="#e63946" />
-          <path d="M8 10 L14 18 L20 10" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-        </svg>
+        <img src="/logo.png" alt="Day.ly" className="navbar-logo-img" />
         <span className="logo-text">day<span className="logo-dot">.</span>ly</span>
       </div>
 

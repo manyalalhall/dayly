@@ -1,16 +1,52 @@
-# React + Vite
+# Day.ly
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A short-video sharing platform. Users can upload, browse, and like videos.
 
-Currently, two official plugins are available:
+## Stack
+- **Frontend** — React 19 + Vite, single CSS file design system
+- **Backend** — Express, MongoDB (Mongoose), JWT auth, Multer uploads
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Getting started
 
-## React Compiler
+### Backend
+```bash
+cd server
+npm install
+# Edit .env — set a real MONGO_URI and a strong JWT_SECRET
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+## Project structure
+```
+src/
+  App.jsx              # Root — state, routing, API calls
+  App.css              # Full design system (tokens, all component styles)
+  main.jsx             # Entry point
+  components/
+    Navbar.jsx         # Top nav with search, upload, auth buttons
+    VideoCard.jsx      # Masonry card with hover-play and like
+    VideoModal.jsx     # Lightbox with playback controls and like
+    UploadModal.jsx    # Drag-and-drop video upload form
+    Toast.jsx          # Success/error notification
+  pages/
+    ExplorePage.jsx    # Main feed — masonry grid of all videos
+    ProfilePage.jsx    # User profile, stats, and their uploaded videos
+    AuthPage.jsx       # Login / signup card
+server/
+  index.js             # Express app entry
+  models/user.js       # User schema
+  models/video.js      # Video schema (likes, views, full-text index)
+  routes/auth.js       # POST /api/auth/signup, /login
+  routes/videos.js     # GET/POST /api/videos, like, view endpoints
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Notes
+- The explore feed is empty until real videos are uploaded — no mock data.
+- Like state is per-session (stored in React state). Counts persist in MongoDB.
+- Change `JWT_SECRET=12345` in `server/.env` before deploying.

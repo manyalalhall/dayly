@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-export default function VideoCard({ video, liked, saved, onVideoClick, onLike, onSave }) {
+export default function VideoCard({ video, liked, onVideoClick, onLike }) {
   const [hovered, setHovered] = useState(false);
   const videoRef = useRef(null);
 
@@ -16,7 +16,7 @@ export default function VideoCard({ video, liked, saved, onVideoClick, onLike, o
     }
   };
 
-  const fmt = (n) => n >= 1000 ? `${(n/1000).toFixed(1)}k` : n;
+  const fmt = (n) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : n;
 
   return (
     <div
@@ -39,9 +39,6 @@ export default function VideoCard({ video, liked, saved, onVideoClick, onLike, o
             <path d="M10 8l6 4-6 4V8z"/>
           </svg>
         </div>
-        {video.tags[0] && (
-          <span className="video-tag">{video.tags[0]}</span>
-        )}
       </div>
 
       <div className="video-info">
@@ -58,15 +55,6 @@ export default function VideoCard({ video, liked, saved, onVideoClick, onLike, o
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
               <span>{fmt(video.likes)}</span>
-            </button>
-            <button
-              className={`action-btn ${saved ? "saved" : ""}`}
-              onClick={(e) => { e.stopPropagation(); onSave(video._id); }}
-              title="Save"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-              </svg>
             </button>
           </div>
         </div>

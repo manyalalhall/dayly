@@ -8,33 +8,36 @@ import VideoModal from "./components/VideoModal";
 import UploadModal from "./components/UploadModal";
 import Toast from "./components/Toast";
 
-const MOCK_VIDEOS = [
-  { _id: "v1", title: "Morning vlog", creator: "manya", creatorId: "u1", src: "/videos/sample1.mp4", thumbnail: "", tags: ["vlog", "morning", "lifestyle"], likes: 142, saves: 38, views: 1024, createdAt: new Date(Date.now() - 86400000 * 2) },
-  { _id: "v2", title: "Study setup tour", creator: "studyspace", creatorId: "u2", src: "/videos/sample2.mp4", thumbnail: "", tags: ["study", "setup", "aesthetic"], likes: 89, saves: 61, views: 740, createdAt: new Date(Date.now() - 86400000 * 5) },
-  { _id: "v3", title: "Travel clip – Himachal", creator: "wanderer", creatorId: "u3", src: "/videos/sample3.mp4", thumbnail: "", tags: ["travel", "himachal", "nature"], likes: 310, saves: 95, views: 2180, createdAt: new Date(Date.now() - 86400000) },
-  { _id: "v4", title: "Sunset timelapse", creator: "manya", creatorId: "u1", src: "/videos/sample1.mp4", thumbnail: "", tags: ["nature", "timelapse", "sunset"], likes: 57, saves: 22, views: 430, createdAt: new Date(Date.now() - 86400000 * 10) },
-  { _id: "v5", title: "Cafe day out", creator: "wanderer", creatorId: "u3", src: "/videos/sample2.mp4", thumbnail: "", tags: ["cafe", "vlog", "food"], likes: 204, saves: 77, views: 1560, createdAt: new Date(Date.now() - 86400000 * 3) },
-  { _id: "v6", title: "Room makeover", creator: "studyspace", creatorId: "u2", src: "/videos/sample3.mp4", thumbnail: "", tags: ["room", "aesthetic", "decor"], likes: 388, saves: 131, views: 3200, createdAt: new Date(Date.now() - 86400000 * 7) },
-];
-
 const API = "http://localhost:5000";
 
 export default function App() {
   const [page, setPage] = useState("explore");
   const [user, setUser] = useState(null);
-  const [videos, setVideos] = useState(MOCK_VIDEOS);
+  const [videos, setVideos] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeVideo, setActiveVideo] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [likedIds, setLikedIds] = useState(new Set());
-  const [savedIds, setSavedIds] = useState(new Set());
   const [toast, setToast] = useState(null);
   const [authMode, setAuthMode] = useState("login");
 
   useEffect(() => {
     const saved = localStorage.getItem("dayly_user");
     if (saved) setUser(JSON.parse(saved));
+    fetchVideos();
   }, []);
+
+  const fetchVideos = async () => {
+    try {
+      const res = await fetch(`${API}/api/videos`);
+      if (res.ok) {
+        const data = await res.json();
+        setVideos(data);
+      }
+    } catch {
+      // backend not running — stay empty
+    }
+  };
 
   const showToast = useCallback((msg, type = "success") => {
     setToast({ msg, type });
@@ -50,7 +53,7 @@ export default function App() {
       });
       const data = await res.json();
       if (res.ok) {
-        const u = { username: data.username, email: loginData.email };
+        const u = { username: data.username, email: loginData.email, token: data.token, userId: data.userId };
         setUser(u);
         localStorage.setItem("dayly_user", JSON.stringify(u));
         setPage("explore");
@@ -89,9 +92,10 @@ export default function App() {
     showToast("Logged out.");
   };
 
-  const toggleLike = (videoId) => {
+  const toggleLike = async (videoId) => {
     if (!user) { showToast("Log in to like videos.", "error"); return; }
     const isLiked = likedIds.has(videoId);
+    // Optimistic update
     setLikedIds(prev => {
       const next = new Set(prev);
       isLiked ? next.delete(videoId) : next.add(videoId);
@@ -100,44 +104,54 @@ export default function App() {
     setVideos(prev => prev.map(v =>
       v._id === videoId ? { ...v, likes: v.likes + (isLiked ? -1 : 1) } : v
     ));
+    try {
+      await fetch(`${API}/api/videos/${videoId}/like`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+    } catch {
+      // revert on failure
+      setLikedIds(prev => {
+        const next = new Set(prev);
+        isLiked ? next.add(videoId) : next.delete(videoId);
+        return next;
+      });
+    }
   };
 
-  const toggleSave = (videoId) => {
-    if (!user) { showToast("Log in to save videos.", "error"); return; }
-    setSavedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(videoId)) { next.delete(videoId); showToast("Removed from saved."); }
-      else { next.add(videoId); showToast("Saved to collection!"); }
-      return next;
-    });
-  };
-
-  const handleUpload = (videoData) => {
-    const newVideo = {
-      _id: `v_${Date.now()}`,
-      ...videoData,
-      creator: user.username,
-      creatorId: user.email,
-      likes: 0,
-      saves: 0,
-      views: 0,
-      createdAt: new Date(),
-    };
-    setVideos(prev => [newVideo, ...prev]);
-    setShowUpload(false);
-    showToast("Video uploaded successfully!");
+  const handleUpload = async (videoData) => {
+    if (!user) return;
+    try {
+      const formData = new FormData();
+      formData.append("title", videoData.title);
+      formData.append("tags", videoData.tags.join(","));
+      formData.append("video", videoData.file);
+      const res = await fetch(`${API}/api/videos`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${user.token}` },
+        body: formData,
+      });
+      if (res.ok) {
+        const newVideo = await res.json();
+        setVideos(prev => [newVideo, ...prev]);
+        setShowUpload(false);
+        showToast("Video uploaded successfully!");
+      } else {
+        showToast("Upload failed.", "error");
+      }
+    } catch {
+      showToast("Cannot reach server.", "error");
+    }
   };
 
   const filteredVideos = searchQuery.trim()
     ? videos.filter(v =>
         v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        v.creator.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        v.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+        v.creator.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : videos;
 
   const userVideos = user ? videos.filter(v => v.creator === user.username) : [];
-  const savedVideos = videos.filter(v => savedIds.has(v._id));
 
   const goAuth = (mode) => { setAuthMode(mode); setPage("auth"); };
 
@@ -162,10 +176,8 @@ export default function App() {
             videos={filteredVideos}
             searchQuery={searchQuery}
             likedIds={likedIds}
-            savedIds={savedIds}
             onVideoClick={setActiveVideo}
             onLike={toggleLike}
-            onSave={toggleSave}
             user={user}
           />
         )}
@@ -174,12 +186,9 @@ export default function App() {
           <ProfilePage
             user={user}
             userVideos={userVideos}
-            savedVideos={savedVideos}
             likedIds={likedIds}
-            savedIds={savedIds}
             onVideoClick={setActiveVideo}
             onLike={toggleLike}
-            onSave={toggleSave}
             onUpload={() => setShowUpload(true)}
           />
         )}
@@ -199,10 +208,8 @@ export default function App() {
         <VideoModal
           video={activeVideo}
           liked={likedIds.has(activeVideo._id)}
-          saved={savedIds.has(activeVideo._id)}
           onClose={() => setActiveVideo(null)}
           onLike={toggleLike}
-          onSave={toggleSave}
           user={user}
         />
       )}

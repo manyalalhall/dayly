@@ -21,11 +21,11 @@ export default function UploadModal({ onClose, onUpload }) {
   };
 
   const handleSubmit = () => {
-    if (!title.trim() || !videoSrc) return;
+    if (!title.trim() || !videoFile) return;
     onUpload({
       title: title.trim(),
-      src: videoSrc,
       tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+      file: videoFile,
     });
   };
 
@@ -78,9 +78,9 @@ export default function UploadModal({ onClose, onUpload }) {
         </div>
 
         <button
-          className={`upload-submit-btn ${(!title.trim() || !videoSrc) ? "disabled" : ""}`}
+          className={`upload-submit-btn ${(!title.trim() || !videoFile) ? "disabled" : ""}`}
           onClick={handleSubmit}
-          disabled={!title.trim() || !videoSrc}
+          disabled={!title.trim() || !videoFile}
         >
           Post video
         </button>
