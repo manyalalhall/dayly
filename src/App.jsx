@@ -92,6 +92,27 @@ export default function App() {
     showToast("Logged out.");
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      const res = await fetch(`${API}/api/auth/delete`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      if (res.ok) {
+        setUser(null);
+        setVideos(prev => prev.filter(v => v.creator !== user.username));
+        setLikedIds(new Set());
+        localStorage.removeItem("dayly_user");
+        setPage("explore");
+        showToast("Account deleted.");
+      } else {
+        showToast("Failed to delete account.", "error");
+      }
+    } catch {
+      showToast("Cannot reach server.", "error");
+    }
+  };
+
   const toggleLike = async (videoId) => {
     if (!user) { showToast("Log in to like videos.", "error"); return; }
     const isLiked = likedIds.has(videoId);
@@ -165,9 +186,6 @@ export default function App() {
         onProfileClick={() => setPage("profile")}
         onLogin={() => goAuth("login")}
         onSignup={() => goAuth("signup")}
-        onLogout={handleLogout}
-        onUpload={() => user ? setShowUpload(true) : goAuth("login")}
-        onExplore={() => setPage("explore")}
       />
 
       <main className="main-content">
@@ -190,19 +208,21 @@ export default function App() {
             onVideoClick={setActiveVideo}
             onLike={toggleLike}
             onUpload={() => setShowUpload(true)}
-          />
-        )}
-
-        {page === "auth" && (
-          <AuthPage
-            mode={authMode}
-            onModeSwitch={setAuthMode}
-            onLogin={handleLogin}
-            onSignup={handleSignup}
-            onBack={() => setPage("explore")}
+            onLogout={handleLogout}
+            onDeleteAccount={handleDeleteAccount}
           />
         )}
       </main>
+
+      {page === "auth" && (
+        <AuthPage
+          mode={authMode}
+          onModeSwitch={setAuthMode}
+          onLogin={handleLogin}
+          onSignup={handleSignup}
+          onBack={() => setPage("explore")}
+        />
+      )}
 
       {activeVideo && (
         <VideoModal

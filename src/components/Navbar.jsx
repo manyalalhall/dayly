@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
-export default function Navbar({ user, searchQuery, onSearch, onLogoClick, onProfileClick, onLogin, onSignup, onLogout, onUpload, onExplore }) {
+export default function Navbar({ user, searchQuery, onSearch, onLogoClick, onProfileClick, onLogin, onSignup }) {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef(null);
 
@@ -14,10 +14,6 @@ export default function Navbar({ user, searchQuery, onSearch, onLogoClick, onPro
         <img src="/logo.png" alt="Day.ly" className="navbar-logo-img" />
         <span className="logo-text">day<span className="logo-dot">.</span>ly</span>
       </div>
-
-      <nav className="navbar-nav">
-        <button className="nav-link" onClick={onExplore}>Explore</button>
-      </nav>
 
       <div className={`search-wrap ${focused ? "focused" : ""}`}>
         <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -43,16 +39,9 @@ export default function Navbar({ user, searchQuery, onSearch, onLogoClick, onPro
 
       <div className="navbar-actions">
         {user ? (
-          <>
-            <button className="btn-upload" onClick={onUpload}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              Upload
-            </button>
-            <button className="avatar-btn" onClick={onProfileClick} title={`@${user.username}`}>
-              <span className="avatar-letter">{user.username[0].toUpperCase()}</span>
-            </button>
-            <button className="btn-ghost" onClick={onLogout}>Log out</button>
-          </>
+          <button className="avatar-btn" onClick={onProfileClick} title={`@${user.username}`}>
+            <span className="avatar-letter">{user.username[0].toUpperCase()}</span>
+          </button>
         ) : (
           <>
             <button className="btn-ghost" onClick={onLogin}>Log in</button>
