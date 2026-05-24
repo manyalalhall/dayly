@@ -1,3 +1,8 @@
+import rateLimit from 'express-rate-limit'
+
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 })
+
+app.use('/api/auth', limiter)
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -13,6 +18,12 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+import cors from 'cors'
+
+app.use(cors({
+  origin: 'http://localhost:5173' // your frontend URL only
+}))
 
 // Serve uploaded videos statically
 const uploadsDir = path.join(__dirname, "uploads");

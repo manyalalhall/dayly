@@ -94,4 +94,13 @@ router.post("/:id/view", async (req, res) => {
   } catch { res.status(500).json({ message: "Error" }); }
 });
 
+const upload = multer({
+  dest: 'uploads/',
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('video/')) cb(null, true)
+    else cb(new Error('Only video files allowed'), false)
+  }
+})
+
 module.exports = router;
