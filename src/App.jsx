@@ -25,6 +25,13 @@ export default function App() {
     const saved = localStorage.getItem("dayly_user");
     if (saved) setUser(JSON.parse(saved));
     fetchVideos();
+
+    // Show success toast if redirected after email verification
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("verified") === "true") {
+      showToast("Email verified! You can now log in.");
+      window.history.replaceState({}, "", "/");
+    }
   }, []);
 
   const fetchVideos = async () => {
@@ -75,7 +82,7 @@ export default function App() {
       });
       const data = await res.json();
       if (res.ok) {
-        showToast("Account created! Please log in.");
+        showToast("Check your email to verify your account!");
         setAuthMode("login");
       } else {
         showToast(data.message, "error");

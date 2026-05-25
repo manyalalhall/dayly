@@ -11,6 +11,11 @@ import videoRoutes from './routes/videos.js'
 
 dotenv.config()
 
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET is not set in .env')
+  process.exit(1)
+}
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
