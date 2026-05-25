@@ -1,6 +1,6 @@
 import VideoCard from "../components/VideoCard";
 
-export default function ExplorePage({ videos, searchQuery, likedIds, onVideoClick, onLike, user }) {
+export default function ExplorePage({ videos, searchQuery, likedIds, pinnedIds, onVideoClick, onLike, onPin, user }) {
   return (
     <div className="explore-page">
       {searchQuery && (
@@ -29,8 +29,10 @@ export default function ExplorePage({ videos, searchQuery, likedIds, onVideoClic
               key={video._id}
               video={video}
               liked={likedIds.has(video._id)}
+              pinned={pinnedIds.has(video._id)}
               onVideoClick={onVideoClick}
               onLike={onLike}
+              onPin={onPin}
             />
           ))}
         </div>

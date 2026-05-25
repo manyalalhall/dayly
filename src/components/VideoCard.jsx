@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-export default function VideoCard({ video, liked, onVideoClick, onLike }) {
+export default function VideoCard({ video, liked, pinned, onVideoClick, onLike, onPin }) {
   const [hovered, setHovered] = useState(false);
   const videoRef = useRef(null);
 
@@ -55,6 +55,13 @@ export default function VideoCard({ video, liked, onVideoClick, onLike }) {
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
               <span>{fmt(video.likes)}</span>
+            </button>
+            <button
+              className={`action-btn pin-btn ${pinned ? "pinned" : ""}`}
+              onClick={(e) => { e.stopPropagation(); onPin(video._id); }}
+              title="Pin"
+            >
+              <span className={`pin-dot ${pinned ? "pinned" : ""}`} />
             </button>
           </div>
         </div>

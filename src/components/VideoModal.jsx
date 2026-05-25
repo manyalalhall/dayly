@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { API } from "../config.js";
 
-export default function VideoModal({ video, liked, onClose, onLike, user }) {
+export default function VideoModal({ video, liked, pinned, onClose, onLike, onPin, user }) {
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -105,6 +105,13 @@ export default function VideoModal({ video, liked, onClose, onLike, user }) {
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
               <span>{fmt(video.likes)} Likes</span>
+            </button>
+            <button
+              className={`modal-action-btn ${pinned ? "active-pin" : ""}`}
+              onClick={() => onPin(video._id)}
+            >
+              <span className={`pin-dot pin-dot-lg ${pinned ? "pinned" : ""}`} />
+              <span>{pinned ? "Pinned" : "Pin"}</span>
             </button>
           </div>
         </div>

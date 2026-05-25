@@ -17,6 +17,7 @@ export default function App() {
   const [activeVideo, setActiveVideo] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [likedIds, setLikedIds] = useState(new Set());
+  const [pinnedIds, setPinnedIds] = useState(new Set());
   const [toast, setToast] = useState(null);
   const [authMode, setAuthMode] = useState("login");
 
@@ -43,6 +44,24 @@ export default function App() {
           src: v.src.startsWith("http") ? v.src : `${API}${v.src}`
         }));
         setVideos(withFullSrc);
+
+        // Restore pinned and liked state from DB
+        const saved = localStorage.getItem("dayly_user");
+        if (saved) {
+          const u = JSON.parse(saved);
+          const pinned = new Set(
+            withFullSrc
+              .filter(v => v.pinnedBy?.includes(u.userId))
+              .map(v => v._id)
+          );
+          const liked = new Set(
+            withFullSrc
+              .filter(v => v.likedBy?.includes(u.userId))
+              .map(v => v._id)
+          );
+          setPinnedIds(pinned);
+          setLikedIds(liked);
+        }
       }
     } catch {
       // backend not running — stay empty
@@ -112,6 +131,7 @@ export default function App() {
         setUser(null);
         setVideos(prev => prev.filter(v => v.creator !== user.username));
         setLikedIds(new Set());
+        setPinnedIds(new Set());
         localStorage.removeItem("dayly_user");
         setPage("explore");
         showToast("Account deleted.");
@@ -145,6 +165,28 @@ export default function App() {
       setLikedIds(prev => {
         const next = new Set(prev);
         isLiked ? next.add(videoId) : next.delete(videoId);
+        return next;
+      });
+    }
+  };
+
+  const togglePin = async (videoId) => {
+    if (!user) { showToast("Log in to pin videos.", "error"); return; }
+    const isPinned = pinnedIds.has(videoId);
+    setPinnedIds(prev => {
+      const next = new Set(prev);
+      isPinned ? next.delete(videoId) : next.add(videoId);
+      return next;
+    });
+    try {
+      await fetch(`${API}/api/videos/${videoId}/pin`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+    } catch {
+      setPinnedIds(prev => {
+        const next = new Set(prev);
+        isPinned ? next.add(videoId) : next.delete(videoId);
         return next;
       });
     }
@@ -208,8 +250,10 @@ export default function App() {
             videos={filteredVideos}
             searchQuery={searchQuery}
             likedIds={likedIds}
+            pinnedIds={pinnedIds}
             onVideoClick={setActiveVideo}
             onLike={toggleLike}
+            onPin={togglePin}
             user={user}
           />
         )}
@@ -219,8 +263,10 @@ export default function App() {
             user={user}
             userVideos={userVideos}
             likedIds={likedIds}
+            pinnedIds={pinnedIds}
             onVideoClick={setActiveVideo}
             onLike={toggleLike}
+            onPin={togglePin}
             onUpload={() => setShowUpload(true)}
             onLogout={handleLogout}
             onDeleteAccount={handleDeleteAccount}
@@ -242,8 +288,10 @@ export default function App() {
         <VideoModal
           video={activeVideo}
           liked={likedIds.has(activeVideo._id)}
+          pinned={pinnedIds.has(activeVideo._id)}
           onClose={() => setActiveVideo(null)}
           onLike={toggleLike}
+          onPin={togglePin}
           user={user}
         />
       )}

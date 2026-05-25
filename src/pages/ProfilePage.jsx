@@ -1,13 +1,16 @@
 import { useState } from "react"
 import VideoCard from "../components/VideoCard"
 
-export default function ProfilePage({ user, userVideos, likedIds, onVideoClick, onLike, onUpload, onLogout, onDeleteAccount }) {
+export default function ProfilePage({ user, userVideos, likedIds, pinnedIds, onVideoClick, onLike, onPin, onUpload, onLogout, onDeleteAccount }) {
   const [showSettings, setShowSettings] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [activeTab, setActiveTab] = useState("posts")
 
   const totalLikes = userVideos.reduce((s, v) => s + v.likes, 0)
   const totalViews = userVideos.reduce((s, v) => s + v.views, 0)
   const fmt = (n) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : n
+
+  const pinnedVideos = userVideos.filter(v => pinnedIds.has(v._id))
 
   return (
     <div className="profile-page">
@@ -59,7 +62,6 @@ export default function ProfilePage({ user, userVideos, likedIds, onVideoClick, 
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>
-
             {!confirmDelete ? (
               <div className="settings-options">
                 <button className="settings-option" onClick={() => { setShowSettings(false); onLogout() }}>
@@ -88,26 +90,69 @@ export default function ProfilePage({ user, userVideos, likedIds, onVideoClick, 
         </div>
       )}
 
-      {userVideos.length === 0 ? (
-        <div className="empty-state">
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.3">
-            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-          </svg>
-          <p>No videos yet</p>
-          <span>Upload your first video to get started</span>
-        </div>
-      ) : (
-        <div className="masonry-grid" style={{ paddingTop: "20px" }}>
-          {userVideos.map(video => (
-            <VideoCard
-              key={video._id}
-              video={video}
-              liked={likedIds.has(video._id)}
-              onVideoClick={onVideoClick}
-              onLike={onLike}
-            />
-          ))}
-        </div>
+      {/* Tabs */}
+      <div className="profile-tabs">
+        <button className={`profile-tab ${activeTab === "posts" ? "active" : ""}`} onClick={() => setActiveTab("posts")}>
+          Posts
+          <span className="tab-count">{userVideos.length}</span>
+        </button>
+        <button className={`profile-tab ${activeTab === "pins" ? "active" : ""}`} onClick={() => setActiveTab("pins")}>
+          <span className="pin-dot pinned" style={{ marginRight: "6px" }} />
+          Pins
+          <span className="tab-count">{pinnedVideos.length}</span>
+        </button>
+      </div>
+
+      {/* Posts tab */}
+      {activeTab === "posts" && (
+        userVideos.length === 0 ? (
+          <div className="empty-state">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.3">
+              <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            <p>No videos yet</p>
+            <span>Upload your first video to get started</span>
+          </div>
+        ) : (
+          <div className="masonry-grid" style={{ paddingTop: "20px" }}>
+            {userVideos.map(video => (
+              <VideoCard
+                key={video._id}
+                video={video}
+                liked={likedIds.has(video._id)}
+                pinned={pinnedIds.has(video._id)}
+                onVideoClick={onVideoClick}
+                onLike={onLike}
+                onPin={onPin}
+              />
+            ))}
+          </div>
+        )
+      )}
+
+      {/* Pins tab */}
+      {activeTab === "pins" && (
+        pinnedVideos.length === 0 ? (
+          <div className="empty-state">
+            <span className="pin-dot pinned" style={{ width: "48px", height: "48px", opacity: 0.3 }} />
+            <p>No pins yet</p>
+            <span>Pin videos from your posts to feature them here</span>
+          </div>
+        ) : (
+          <div className="masonry-grid" style={{ paddingTop: "20px" }}>
+            {pinnedVideos.map(video => (
+              <VideoCard
+                key={video._id}
+                video={video}
+                liked={likedIds.has(video._id)}
+                pinned={pinnedIds.has(video._id)}
+                onVideoClick={onVideoClick}
+                onLike={onLike}
+                onPin={onPin}
+              />
+            ))}
+          </div>
+        )
       )}
     </div>
   )
