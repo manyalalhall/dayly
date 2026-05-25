@@ -89,3 +89,16 @@ router.post('/:id/view', async (req, res) => {
 })
 
 export default router
+router.post('/:id/pin', auth, async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id)
+    if (!video) return res.status(404).json({ message: 'Not found' })
+    const idx = video.pinnedBy.indexOf(req.user.userId)
+    if (idx === -1) video.pinnedBy.push(req.user.userId)
+    else video.pinnedBy.splice(idx, 1)
+    await video.save()
+    res.json({ pinned: idx === -1 })
+  } catch {
+    res.status(500).json({ message: 'Error' })
+  }
+})

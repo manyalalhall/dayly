@@ -9,6 +9,7 @@ const videoSchema = new mongoose.Schema({
   likes:     { type: Number, default: 0 },
   views:     { type: Number, default: 0 },
   likedBy:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  pinnedBy:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, { timestamps: true })
 
 videoSchema.index({ title: 'text', tags: 'text', creator: 'text' })
