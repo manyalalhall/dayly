@@ -39,7 +39,11 @@ export default function App() {
       const res = await fetch(`${API}/api/videos`);
       if (res.ok) {
         const data = await res.json();
-        setVideos(data);
+        const withFullSrc = data.map(v => ({
+          ...v,
+          src: v.src.startsWith("http") ? v.src : `${API}${v.src}`
+        }));
+        setVideos(withFullSrc);
       }
     } catch {
       // backend not running — stay empty
@@ -161,7 +165,11 @@ export default function App() {
       });
       if (res.ok) {
         const newVideo = await res.json();
-        setVideos(prev => [newVideo, ...prev]);
+        const withFullSrc = {
+          ...newVideo,
+          src: newVideo.src.startsWith("http") ? newVideo.src : `${API}${newVideo.src}`
+        };
+        setVideos(prev => [withFullSrc, ...prev]);
         setShowUpload(false);
         showToast("Video uploaded successfully!");
       } else {
