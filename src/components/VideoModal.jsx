@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import { API } from "../config.js";
 
 export default function VideoModal({ video, liked, onClose, onLike, user }) {
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    // Increment view count when video is opened
+    fetch(`${API}/api/videos/${video._id}/view`, { method: "POST" })
+      .catch(() => {});
+  }, [video._id]);
 
   useEffect(() => {
     const handleKey = (e) => { if (e.key === "Escape") onClose(); };

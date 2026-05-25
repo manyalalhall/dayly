@@ -1,5 +1,6 @@
 import "./App.css";
 import { useEffect, useState, useCallback } from "react";
+import { API } from "./config.js";
 import Navbar from "./components/Navbar";
 import ExplorePage from "./pages/ExplorePage";
 import ProfilePage from "./pages/ProfilePage";
@@ -7,8 +8,6 @@ import AuthPage from "./pages/AuthPage";
 import VideoModal from "./components/VideoModal";
 import UploadModal from "./components/UploadModal";
 import Toast from "./components/Toast";
-
-const API = "http://localhost:5000";
 
 export default function App() {
   const [page, setPage] = useState("explore");

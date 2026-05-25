@@ -31,7 +31,7 @@ export default function VideoCard({ video, liked, onVideoClick, onLike }) {
           muted
           loop
           playsInline
-          preload="none"
+          preload="metadata"
         />
         <div className="video-overlay">
           <svg className="play-icon" width="40" height="40" viewBox="0 0 24 24" fill="white">
