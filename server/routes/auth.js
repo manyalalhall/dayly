@@ -31,13 +31,25 @@ router.post('/signup', async (req, res) => {
     if (!username || !email || !password)
       return res.status(400).json({ message: 'All fields required' })
 
-    const existing = await User.findOne({ email })
-    if (existing)
+    // Only letters, numbers, underscores — no spaces or special chars
+    const usernameRegex = /^[a-zA-Z0-9_]+$/
+    if (!usernameRegex.test(username))
+      return res.status(400).json({ message: 'Username can only contain letters, numbers, and underscores' })
+
+    if (username.length < 3 || username.length > 30)
+      return res.status(400).json({ message: 'Username must be between 3 and 30 characters' })
+
+    const existingUsername = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } })
+    if (existingUsername)
+      return res.status(400).json({ message: 'Username already taken' })
+
+    const existingEmail = await User.findOne({ email })
+    if (existingEmail)
       return res.status(400).json({ message: 'Email already in use' })
 
     const hashed = await bcrypt.hash(password, 10)
     const verifyToken = crypto.randomBytes(32).toString('hex')
-    const verifyTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    const verifyTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
     await new User({ username, email, password: hashed, verifyToken, verifyTokenExpiry }).save()
     await sendVerificationEmail(email, username, verifyToken)
