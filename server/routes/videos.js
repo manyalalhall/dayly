@@ -4,6 +4,7 @@ import path from 'path'
 import jwt from 'jsonwebtoken'
 import { fileURLToPath } from 'url'
 import Video from '../models/video.js'
+import { analyzeVideo } from '../lib/aiService.js'
 
 const router = express.Router()
 const __filename = fileURLToPath(import.meta.url)
@@ -88,7 +89,6 @@ router.post('/:id/view', async (req, res) => {
   }
 })
 
-export default router
 router.post('/:id/pin', auth, async (req, res) => {
   try {
     const video = await Video.findById(req.params.id)
@@ -102,3 +102,45 @@ router.post('/:id/pin', auth, async (req, res) => {
     res.status(500).json({ message: 'Error' })
   }
 })
+
+// On-demand transcript + visual summary. Requires login, since each new
+// analysis triggers real compute cost (Whisper + BLIP) on the AI service.
+router.post('/:id/analyze', auth, async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id)
+    if (!video) return res.status(404).json({ message: 'Not found' })
+
+    if (video.aiStatus === 'done') {
+      return res.json({
+        status: 'done',
+        transcript: video.transcript,
+        visualSummary: video.visualSummary,
+      })
+    }
+
+    if (video.aiStatus === 'processing') {
+      return res.status(409).json({ status: 'processing', message: 'Analysis already in progress' })
+    }
+
+    video.aiStatus = 'processing'
+    await video.save()
+
+    try {
+      const result = await analyzeVideo(video.src)
+      video.transcript = result.transcript
+      video.visualSummary = result.visual_summary
+      video.aiStatus = 'done'
+      await video.save()
+      res.json({ status: 'done', transcript: video.transcript, visualSummary: video.visualSummary })
+    } catch (err) {
+      console.error('Video analysis failed:', err)
+      video.aiStatus = 'failed'
+      await video.save()
+      res.status(502).json({ status: 'failed', message: 'Analysis failed, please try again' })
+    }
+  } catch {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+export default router

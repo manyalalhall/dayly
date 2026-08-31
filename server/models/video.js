@@ -10,6 +10,9 @@ const videoSchema = new mongoose.Schema({
   views:     { type: Number, default: 0 },
   likedBy:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   pinnedBy:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  transcript:    { type: String, default: null },
+  visualSummary: { type: String, default: null },
+  aiStatus:      { type: String, enum: ['none', 'processing', 'done', 'failed'], default: 'none' },
 }, { timestamps: true })
 
 videoSchema.index({ title: 'text', tags: 'text', creator: 'text' })

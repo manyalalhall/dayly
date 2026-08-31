@@ -5,6 +5,37 @@ export default function VideoModal({ video, liked, pinned, onClose, onLike, onPi
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [aiStatus, setAiStatus] = useState(video.aiStatus || "none");
+  const [transcript, setTranscript] = useState(video.transcript || null);
+  const [visualSummary, setVisualSummary] = useState(video.visualSummary || null);
+  const [aiError, setAiError] = useState(null);
+
+  const handleAnalyze = async () => {
+    if (!user) { setAiError("Log in to generate a transcript."); return; }
+    setAiStatus("processing");
+    setAiError(null);
+    try {
+      const res = await fetch(`${API}/api/videos/${video._id}/analyze`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.status === "done") {
+        setTranscript(data.transcript);
+        setVisualSummary(data.visualSummary);
+        setAiStatus("done");
+      } else if (res.status === 409) {
+        setAiError("Already generating — try again in a moment.");
+        setAiStatus("processing");
+      } else {
+        setAiStatus("failed");
+        setAiError(data.message || "Something went wrong generating the transcript.");
+      }
+    } catch {
+      setAiStatus("failed");
+      setAiError("Cannot reach server.");
+    }
+  };
 
   useEffect(() => {
     // Increment view count when video is opened
@@ -95,6 +126,39 @@ export default function VideoModal({ video, liked, pinned, onClose, onLike, onPi
               {video.tags.map(t => <span key={t} className="tag">#{t}</span>)}
             </div>
           )}
+
+          <div className="modal-ai-section">
+            {aiStatus === "none" && (
+              <button className="modal-action-btn" onClick={handleAnalyze}>
+                <span>Generate transcript &amp; summary</span>
+              </button>
+            )}
+            {aiStatus === "processing" && (
+              <p className="modal-ai-status">Analyzing video… this can take a minute.</p>
+            )}
+            {aiStatus === "failed" && (
+              <div>
+                <p className="modal-ai-status modal-ai-error">{aiError || "Analysis failed."}</p>
+                <button className="modal-action-btn" onClick={handleAnalyze}>Try again</button>
+              </div>
+            )}
+            {aiStatus === "done" && (
+              <div className="modal-ai-results">
+                {visualSummary && (
+                  <div>
+                    <p className="modal-ai-label">Visual summary</p>
+                    <p className="modal-ai-text">{visualSummary}</p>
+                  </div>
+                )}
+                {transcript && (
+                  <div>
+                    <p className="modal-ai-label">Transcript</p>
+                    <p className="modal-ai-text">{transcript}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="modal-actions">
             <button
